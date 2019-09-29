@@ -13,6 +13,7 @@ namespace ConsoleApp2
         public virtual void PrintScore() {
             Console.WriteLine($"Player 1 Score {this.P1Score}");
             Console.WriteLine($"Player 2 Score {this.P2Score}");
+            Console.ReadKey();            
         }
     }
 }

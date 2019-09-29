@@ -5,24 +5,28 @@ using static ConsoleApp2.GameMachine;
 
 namespace ConsoleApp2
 {
-    public enum PlayerMood { AlwaysCOoperate = 1, AlwaysCheat = 0 }
+
     public abstract class Player
     {
-        public abstract selection GamePlay();
 
-        public selection oppenentSelection { get; private set; }
-
-        public void setOppenentSelection(selection selected, int iteration)
+        public Player(string _name)
         {
-            if (iteration == 1)
-            {
-                oppenentSelection = selection.COoperate;
-                return;
-            }
-            oppenentSelection = selected;
+            this.Name = _name;
         }
-     
+        public abstract Selection GamePlay();
 
+        public readonly string Name;
+
+        public List<Selection> playerMemory = new List<Selection>(); // opponents memory         
+        protected Selection GetOppenentsLastSelection()
+        {
+            if (playerMemory.Count > 0)
+            {
+                return playerMemory[(playerMemory.Count) - 1];
+            }
+            return Selection.FirstSelection;
+
+        }
         protected int GetRandom()
         {
             Random random = new Random();
@@ -33,37 +37,74 @@ namespace ConsoleApp2
 
     public class KindBot : Player
     {
-
-        public override selection GamePlay()
+        public KindBot(string _name) : base(_name)
         {
-            return selection.COoperate;
+        }
+
+        public override Selection GamePlay()
+        {
+            return Selection.COoperate;
         }
     }
 
     public class HumanPlayer : Player
     {
-
-        public override selection GamePlay()
+        public HumanPlayer(string _name) : base(_name)
         {
-            return GetRandom() == 1 ? selection.COoperate : selection.Cheat;
+        }
+
+        public override Selection GamePlay()
+        {
+            return GetRandom() == 1 ? Selection.COoperate : Selection.Cheat;
         }
     }
 
     public class EvilBot : Player
     {
-        public override selection GamePlay()
+        public EvilBot(string _name) : base(_name)
         {
-            return selection.Cheat;
         }
 
+        public override Selection GamePlay()
+        {
+            return Selection.Cheat;
+        }
     }
 
     public class CopyCatBot : Player
     {
-        public override selection GamePlay()
+        public CopyCatBot(string _name) : base(_name)
         {
-            return oppenentSelection;
         }
 
+        public override Selection GamePlay()
+        {
+            if (GetOppenentsLastSelection() == Selection.FirstSelection)
+                return Selection.COoperate;
+
+            return this.GetOppenentsLastSelection();
+        }
+    }
+
+    public class GruderBot : Player
+    {
+        public GruderBot(string _name) : base(_name)
+        {
+        }
+
+        private bool startGrudge { get; set; } = false;
+        public override Selection GamePlay()
+        {
+            var oppenentSelection = GetOppenentsLastSelection();
+
+            if (oppenentSelection != Selection.FirstSelection &&
+                (oppenentSelection == Selection.Cheat || this.startGrudge))
+            {
+                this.startGrudge = true;
+                return Selection.Cheat;
+            }
+
+            return Selection.COoperate;
+        }
     }
 }
